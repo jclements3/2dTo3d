@@ -1,0 +1,20 @@
+{
+  "voxels_reconstructed": 33076,
+  "voxels_truth": 32780,
+  "IoU": 0.9910509130487363,
+  "precision_volumetric": 0.9910509130487363,
+  "recall_completeness_volumetric": 1.0,
+  "grid_resolution": 110,
+  "voxel_size": 0.10806909289489074,
+  "n_views": 32,
+  "chamfer_distance": 0.008785706486501456,
+  "chamfer_pct_of_diagonal": 0.07854519670282384,
+  "hausdorff_distance": 0.18718115962183252,
+  "surface_precision_at_tau": 0.9988295293035699,
+  "surface_recall_at_tau": 0.9973661852166525,
+  "f_score_at_tau": 0.9980973208958908,
+  "tau": 0.15,
+  "color_rmse": 0.3996397990825819,
+  "color_accuracy": 0.8145978069808321,
+  "color_tolerance": 0.3
+}

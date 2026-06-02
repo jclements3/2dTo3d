@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Viewer — the Sketchfab trick</title>
+
+<!-- A distinctive type pairing: an elegant serif for the title, a precise mono for the HUD. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Three.js: the WebGL library that does the heavy lifting (the same kind of tech Sketchfab uses). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+  :root {
+    --bg-0: #0a0c10;
+    --bg-1: #161b24;
+    --ink: #e8eaed;
+    --dim: #6b7280;
+    --accent: #d9a066;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+
+  /* The studio backdrop — a soft radial glow, like a photographer's seamless paper. */
+  body {
+    background: radial-gradient(120% 120% at 50% 35%, var(--bg-1) 0%, var(--bg-0) 70%);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: grab;
+  }
+  body.dragging { cursor: grabbing; }
+
+  #stage { position: fixed; inset: 0; }
+  canvas { display: block; }
+
+  /* HUD overlays sit above the canvas. pointer-events:none lets clicks fall through to the 3D scene. */
+  .hud { position: fixed; pointer-events: none; user-select: none; }
+
+  .title {
+    top: 28px; left: 32px;
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(28px, 5vw, 52px);
+    line-height: 0.95;
+    letter-spacing: 0.5px;
+  }
+  .title em { color: var(--accent); }
+  .subtitle {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .hint {
+    bottom: 26px; left: 32px;
+    font-size: 12px;
+    color: var(--dim);
+    letter-spacing: 0.5px;
+    line-height: 1.9;
+  }
+  .hint b { color: var(--ink); font-weight: 500; }
+
+  /* A real, clickable control. */
+  .toggle {
+    position: fixed;
+    bottom: 26px; right: 32px;
+    pointer-events: auto;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 11px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+    backdrop-filter: blur(8px);
+  }
+  .toggle:hover { border-color: var(--accent); background: rgba(217,160,102,0.08); }
+  .toggle .dot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); margin-right: 8px; vertical-align: middle;
+    box-shadow: 0 0 8px var(--accent);
+  }
+  .toggle.off .dot { background: var(--dim); box-shadow: none; }
+</style>
+</head>
+<body>
+  <div id="stage"></div>
+
+  <div class="hud title">LEGO&nbsp;<em>Tower</em><div class="subtitle">WebGL · capture &amp; reconstruct</div></div>
+  <div class="hud hint">
+    <b>Drag</b> to orbit &nbsp;·&nbsp; <b>Scroll</b> to zoom &nbsp;·&nbsp; <b>Right-drag</b> to pan
+  </div>
+  <button class="toggle" id="spinBtn"><span class="dot"></span>Auto-rotate</button>
+
+<script>
+/* ============================================================
+   THE FOUR INGREDIENTS OF ANY WEBGL 3D VIEWER
+   1. A SCENE      – the world that holds your objects + lights
+   2. A CAMERA     – the eye looking into that world
+   3. A RENDERER   – paints the scene onto an HTML <canvas>
+   4. CONTROLS     – translate mouse/touch into camera movement
+   ============================================================ */
+
+const stage = document.getElementById('stage');
+
+// ---- 1. SCENE ------------------------------------------------
+const scene = new THREE.Scene();
+
+// ---- 2. CAMERA -----------------------------------------------
+// (field-of-view, aspect ratio, near clip, far clip)
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+
+// ---- 3. RENDERER ---------------------------------------------
+// alpha:true lets the CSS gradient show through; antialias smooths edges.
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;        // accurate colors
+renderer.toneMapping = THREE.ACESFilmicToneMapping;   // cinematic, "rendered" look
+renderer.toneMappingExposure = 1.05;
+stage.appendChild(renderer.domElement);
+
+// ---- LIGHTING (this is what sells the "studio" look) ---------
+// Soft sky/ground fill so nothing is pure black.
+scene.add(new THREE.HemisphereLight(0xbfd4ff, 0x202026, 0.55));
+
+// A bright key light that casts the shadow.
+const key = new THREE.DirectionalLight(0xffffff, 2.4);
+key.position.set(4, 7, 5);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.radius = 6;
+Object.assign(key.shadow.camera, { left: -16, right: 16, top: 24, bottom: -4, far: 80 });
+scene.add(key);
+
+// A warm rim light from behind to separate the object from the background.
+const rim = new THREE.DirectionalLight(0xffb870, 1.4);
+rim.position.set(-6, 2, -4);
+scene.add(rim);
+
+// ---- THE OBJECT: a procedural colorful LEGO tower ------------
+// A twisting, top-heavy stack of studded bricks (like the reference photo).
+// We also record an exact descriptor of every brick (oriented box + color)
+// so the reconstruction verifier has ground truth to score against.
+const PALETTE = [0xC4281B, 0x0055BF, 0xF2CD37, 0x237841, 0xFFFFFF, 0xFE8A18, 0x9E5CB3];
+const STUD = 0.8;                 // stud pitch (world units)
+const BRICK_H = 0.95;             // brick body height
+const STUD_R = 0.24, STUD_H = 0.18;
+
+const legoRoot = new THREE.Group();
+const brickDescriptors = [];      // ground truth: [{center, half, rotY, color}]
+
+function addBrick(cx, cy, cz, nx, nz, rotY, colorHex) {
+  const w = nx * STUD, d = nz * STUD, h = BRICK_H;
+  const g = new THREE.Group();
+  g.position.set(cx, cy, cz);
+  g.rotation.y = rotY;
+  const mat = new THREE.MeshStandardMaterial({ color: colorHex, roughness: 0.45 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  body.castShadow = body.receiveShadow = true;
+  g.add(body);
+  for (let i = 0; i < nx; i++)
+    for (let j = 0; j < nz; j++) {
+      const stud = new THREE.Mesh(new THREE.CylinderGeometry(STUD_R, STUD_R, STUD_H, 16), mat);
+      stud.position.set((i - (nx - 1) / 2) * STUD, h / 2 + STUD_H / 2, (j - (nz - 1) / 2) * STUD);
+      stud.castShadow = true;
+      g.add(stud);
+    }
+  legoRoot.add(g);
+  const c = new THREE.Color(colorHex);
+  brickDescriptors.push({ center: [cx, cy, cz], half: [w / 2, h / 2, d / 2],
+                          rotY: rotY, color: [c.r, c.g, c.b] });
+}
+
+// deterministic PRNG so the tower (and its ground truth) are reproducible
+let seed = 7;
+const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+
+let y = 0;
+const LAYERS = 12;
+for (let k = 0; k < LAYERS; k++) {
+  const nx = rnd() > 0.5 ? 4 : 2;                       // 2x4 or 2x2 footprint
+  const rotY = k * 0.5 + (rnd() - 0.5) * 0.3;           // cumulative twist + jitter
+  const cx = Math.cos(k * 0.6) * 0.5 + (rnd() - 0.5) * 0.35;
+  const cz = Math.sin(k * 0.6) * 0.5 + (rnd() - 0.5) * 0.35;
+  y += BRICK_H;
+  addBrick(cx, y, cz, nx, 2, rotY, PALETTE[k % PALETTE.length]);
+}
+for (let s = 0; s < 5; s++) {                            // scattered bricks at the base
+  const a = rnd() * Math.PI * 2, r = 1.2 + rnd();
+  addBrick(Math.cos(a) * r, BRICK_H / 2, Math.sin(a) * r,
+           rnd() > 0.5 ? 4 : 2, 2, rnd() * Math.PI, PALETTE[(s + 2) % PALETTE.length]);
+}
+scene.add(legoRoot);
+
+// Bounding sphere -> camera framing distance + voxel-grid bounds for the verifier.
+const bbox = new THREE.Box3().setFromObject(legoRoot);
+const bcenter = bbox.getCenter(new THREE.Vector3());
+const boundR = 0.5 * bbox.getSize(new THREE.Vector3()).length();
+const MODEL = {
+  center: [bcenter.x, bcenter.y, bcenter.z],
+  halfSize: boundR * 1.05,
+  baseRadius: boundR / Math.sin((45 * Math.PI / 180) / 2) * 1.08,  // fits from any angle
+};
+
+// Ground plane (shadow only) for the live look; hidden during capture.
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(120, 120),
+                              new THREE.ShadowMaterial({ opacity: 0.3 }));
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = bbox.min.y - 0.05;
+ground.receiveShadow = true;
+scene.add(ground);
+
+/* ============================================================
+   4. CONTROLS — a tiny custom orbit controller.
+   The camera moves on the surface of a sphere around a target.
+   We track that position in spherical coordinates:
+     radius  = how far away (zoom)
+     theta   = horizontal angle (left/right drag)
+     phi     = vertical angle   (up/down drag)
+   ============================================================ */
+const target = new THREE.Vector3(MODEL.center[0], MODEL.center[1], MODEL.center[2]);
+let radius = MODEL.baseRadius, theta = 0.6, phi = 1.15;
+let autoRotate = true;
+
+function applyCamera() {
+  // clamp phi so we never hit the exact pole (where look-up is undefined)
+  phi = Math.max(0.02, Math.min(Math.PI - 0.02, phi));
+  camera.position.x = target.x + radius * Math.sin(phi) * Math.sin(theta);
+  camera.position.y = target.y + radius * Math.cos(phi);
+  camera.position.z = target.z + radius * Math.sin(phi) * Math.cos(theta);
+  camera.lookAt(target);
+}
+
+// --- pointer handling (works for mouse; touch uses the same events) ---
+let dragging = false, panning = false, lastX = 0, lastY = 0;
+
+renderer.domElement.addEventListener('pointerdown', e => {
+  dragging = true;
+  panning = (e.button === 2);   // right mouse button pans
+  lastX = e.clientX; lastY = e.clientY;
+  autoRotate = false;
+  document.body.classList.add('dragging');
+});
+
+window.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX, dy = e.clientY - lastY;
+  lastX = e.clientX; lastY = e.clientY;
+
+  if (panning) {
+    // shift the look-at target across the screen plane
+    const panSpeed = radius * 0.0016;
+    const right = new THREE.Vector3().crossVectors(camera.up, camera.getWorldDirection(new THREE.Vector3())).normalize();
+    target.addScaledVector(right, dx * panSpeed);
+    target.y += dy * panSpeed;
+  } else {
+    theta -= dx * 0.005;   // horizontal orbit
+    phi   -= dy * 0.005;   // vertical orbit
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  dragging = panning = false;
+  document.body.classList.remove('dragging');
+});
+
+// scroll wheel = zoom (change the orbit radius)
+renderer.domElement.addEventListener('wheel', e => {
+  e.preventDefault();
+  radius *= (1 + Math.sign(e.deltaY) * 0.08);
+  radius = Math.max(MODEL.baseRadius * 0.3, Math.min(MODEL.baseRadius * 3, radius));
+}, { passive: false });
+
+// stop the browser context menu so right-drag-pan feels native
+renderer.domElement.addEventListener('contextmenu', e => e.preventDefault());
+
+// auto-rotate toggle button
+const spinBtn = document.getElementById('spinBtn');
+spinBtn.addEventListener('click', () => {
+  autoRotate = !autoRotate;
+  spinBtn.classList.toggle('off', !autoRotate);
+});
+
+/* ============================================================
+   CAPTURE API — lets an external script (capture_views.py) drive the
+   camera to exact angles and read back the TRUE matrices Three.js used,
+   so the reconstruction uses ground-truth poses, not re-derived guesses.
+   ============================================================ */
+const DEG = Math.PI / 180;
+const BASE_RADIUS = MODEL.baseRadius;   // orbit distance at zoom = 1.0 (frames the model)
+
+window.viewerAPI = {
+  ready: true,
+
+  // azimuth/elevation in degrees; zoom 1 = framed, >1 = closer.
+  // el 0 = equator, +90 = straight down (top), -90 = straight up (bottom).
+  setView(azDeg, elDeg, zoom) {
+    autoRotate = false;
+    theta  = azDeg * DEG;
+    phi    = (90 - elDeg) * DEG;
+    radius = BASE_RADIUS / (zoom || 1);
+    applyCamera();
+    renderer.render(scene, camera);
+  },
+
+  // exact matrices used for the last render (column-major, length 16).
+  getMatrices() {
+    camera.updateMatrixWorld();
+    return {
+      projection: Array.from(camera.projectionMatrix.elements),
+      view: Array.from(camera.matrixWorldInverse.elements),
+    };
+  },
+
+  // ground-truth description of the model, for the verifier.
+  getModelInfo() {
+    legoRoot.updateMatrixWorld(true);
+    return {
+      type: 'legoTower',
+      center: MODEL.center,
+      halfSize: MODEL.halfSize,
+      baseRadius: MODEL.baseRadius,
+      bricks: brickDescriptors,            // oriented boxes + per-brick color
+      worldMatrix: Array.from(legoRoot.matrixWorld.elements),
+    };
+  },
+
+  // Transparent background + hide everything but the model, so the
+  // screenshot's ALPHA channel is exactly the model silhouette.
+  setCaptureMode(on) {
+    document.body.style.background = on ? 'transparent' : '';
+    renderer.setClearAlpha(on ? 0 : 1);
+    document.querySelectorAll('.hud, .toggle')
+            .forEach(e => (e.style.display = on ? 'none' : ''));
+    ground.visible = !on;          // shadow plane would taint the silhouette alpha
+    if (on) autoRotate = false;
+    renderer.render(scene, camera);
+  },
+};
+
+// ---- THE RENDER LOOP -----------------------------------------
+// Called ~60x/second. This is the heartbeat of any real-time 3D app.
+function animate() {
+  requestAnimationFrame(animate);
+  if (autoRotate) theta -= 0.0025;
+  applyCamera();
+  renderer.render(scene, camera);
+}
+animate();
+
+// ---- keep it crisp on resize ---------------------------------
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
