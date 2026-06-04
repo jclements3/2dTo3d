@@ -20,7 +20,7 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
 | soundboard bass face width 360mm | ✅ | tape on style25 base |
 | soundboard taper / bottom contraction | ⚠️ | guessed |
 | pillar: ~3° vertical, ~90mm from C1, 1840 capital | 🟡 | photo + spans |
-| pillar/base/chamber detailed outlines | ⚠️ | being sliced from 3D mesh |
+| pillar/base/chamber detailed outlines | ✅ | SLICED from Hunyuan3D mesh -> style25_profile.svg |
 | overall height 2000mm | ✅ | owner + tile-grid check (tile≈236mm) |
 
 ## Deliverables
@@ -34,3 +34,9 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
    pillar/neck/chamber/base outlines + perpendicular slices for soundboard cross-section.
 2. Fallbacks: TRELLIS, TripoSR.
 3. Fuse sliced shapes with measured points -> high-res profile + soundboard face.
+
+## Milestone log
+- Hunyuan3D-2 mesh generated from style25.avif (124k verts) on freed GPU.
+- Side profile extracted from mesh symmetry plane (YZ), window preserved,
+  scaled to real 2000x980mm -> `style25_profile.svg`. Shows pillar/neck/chamber/base outlines.
+- NEXT: soundboard face + cross-section (lemicon) from perpendicular slices; fuse measured strings.
