@@ -48,3 +48,29 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
 
 - FINAL side profile: labeled (column/neck/sound chamber/base) + string fan, high-res
   -> style25_profile.svg / .png. This is the high-resolution harp profile.
+
+---
+## COMPLETE — deliverables summary
+
+**Two goals achieved: high-resolution side profile + soundboard face.**
+
+| file | what | source |
+|---|---|---|
+| `style25_profile.svg/.png` | **side profile** — column, neck (ogee), sound chamber, base, window, strings; 2000×980 mm, labeled | 3D mesh (Hunyuan3D-2) of your harp, sliced at symmetry plane |
+| `style25soundboard.svg/.png` | **soundboard face** — taper + bottom contraction, bass 360 mm | mesh taper × measured bass width |
+| `style25_soundbox_xsection.png` | **lemicon cross-section** — flat face + round back, at 4 heights | mesh horizontal slices |
+| `style25strings.svg` | broadside string layout (47 strings, mechanism) | your measurements |
+| `lhstyle25_grid2m.csv` | the numbers: 47 strings × G/S/N/F/T/U/L heights | measured (T now 36/47 measured) |
+| `style25frame.md` | pillar/base/chamber/shoulder coords | measured + mesh |
+
+### Honest accuracy notes
+- **Side-profile SHAPE** = your real harp (3D mesh from style25.avif). Recognizable, clean.
+- **Vertical scale** 2000 mm = your tape (tile-grid confirmed, tile≈236 mm).
+- **Front-back depth** scaled to 980 mm (real Style 25 ~39"); single-image-3D over-deepened the raw mesh (~1525 mm) so depth is the softest dimension.
+- **Strings/grommets/discs** = your measurements (authoritative).
+- **U (neck top):** 31/47 measured, 16 interpolated. **L (neck bottom):** estimated.
+
+### To push further (needs owner input or more captures)
+- Multi-view capture (turntable of full harp) -> true photogrammetry, exact depth.
+- Hand-read the 16 off-frame bass U values.
+- Soundbox depth measurement to replace the 980 mm scale assumption.
