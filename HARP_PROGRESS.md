@@ -105,3 +105,11 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
 3. Comprehensive engineering sheet (profile dots + soundboard face + neck spec, one high-res page)
 4. Re-derive gut diameters from a target-tension model as a cross-check on the published gauges
 5. Recheck disc-spacing geometry is mechanically buildable (fourchette clearance)
+
+## Round 3 (autonomous)
+- Blend sensitivity: 50/50 gives the SMOOTHEST length scale (kink RMS 20.9 vs 25.5 pure-physics);
+  published diameters are stepped and inject kinks, so 50/50 best recovers the true smooth scale
+  AND stays closest to tape (22mm RMS). Adopted 50/50.
+- U upgraded cubic->QUARTIC bezier, USER-weighted: bass peak now 1951 (was 1933), no overshoot.
+- Bass tuners clamped to 2000mm crown (harmonic curve peaks at A1-B1, real geometry).
+- Ordering g<L<S<N<F<T<=U verified 0 violations.
