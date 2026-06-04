@@ -74,3 +74,17 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
 - Multi-view capture (turntable of full harp) -> true photogrammetry, exact depth.
 - Hand-read the 16 off-frame bass U values.
 - Soundbox depth measurement to replace the 980 mm scale assumption.
+
+---
+## Round 2 — physics-refined F/N/S + bezier U/L (owner's directive)
+- **F (flat pin)**: recomputed from the vibrating-string equation. Open string sounds its
+  FLAT pitch (harp tuned C-flat major all-pedals-up). For each string:
+  f_flat = note x 2^(-1/12); mu = rho*pi*(d/2)^2 (gut 1300, nylon 1140 kg/m^3);
+  T = pi*rho*d^2*L^2*f^2. Per-material smooth-tension fit -> recompute L (blend 65/35 with tape).
+  Wound bass kept as measured (winding mass unknown). Monotonic enforced.
+- **N, S**: F_refined x 2^(-1/12), 2^(-2/12) (semitone disc steps).
+- **T (tuner)**: F + 35mm (non-speaking length). NOTE: dropped the measured tuner_cm reads —
+  they were ~150mm above the flat pin (inconsistent); the bridge->tuning-pin gap is ~35mm.
+- **U/L**: cubic-bezier fit to the harmonic-curve shape; U weighted to USER/photo reads,
+  clamped <=1995; L = sharp_disc - 15mm bezier. Ordering g<L<s<n<f<t<U verified 0 violations.
+- Output: style25strings.svg/.png (clean ogee neck band, refined dots).
