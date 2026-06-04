@@ -88,3 +88,20 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
 - **U/L**: cubic-bezier fit to the harmonic-curve shape; U weighted to USER/photo reads,
   clamped <=1995; L = sharp_disc - 15mm bezier. Ordering g<L<s<n<f<t<U verified 0 violations.
 - Output: style25strings.svg/.png (clean ogee neck band, refined dots).
+
+---
+## Round 2 complete (autonomous). Done this round:
+- F/N/S physics refinement (vibrating string + smooth design tension, per-material)
+- T = F+35mm; U/L cubic-bezier fit; ordering verified
+- Physics validation figure (style25_physics_validation.png): tension smooth (8% denoise), freqs exact, octave-halving in treble
+- Soundboard face: clean teardrop + bottom contraction + 47 grommets at measured spacing
+- Neck mechanism spec (lhstyle25_neck_spec.csv): disc/pin gaps per string
+- Web check: L&H publishes gauge charts, NOT lengths (lengths are harp-specific) -> measured is authoritative
+- Caveat logged: absolute tension runs ~high -> gut diameters may be slightly thick; relative smoothing robust
+
+## Next agenda (continuing autonomously):
+1. Tighten U bezier to better hit the bass peak (C1~1960) without overshoot
+2. Sensitivity: re-run F/N/S at 80/20 and 50/50 blends; pick by tension smoothness
+3. Comprehensive engineering sheet (profile dots + soundboard face + neck spec, one high-res page)
+4. Re-derive gut diameters from a target-tension model as a cross-check on the published gauges
+5. Recheck disc-spacing geometry is mechanically buildable (fourchette clearance)
