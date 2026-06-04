@@ -40,3 +40,8 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
 - Side profile extracted from mesh symmetry plane (YZ), window preserved,
   scaled to real 2000x980mm -> `style25_profile.svg`. Shows pillar/neck/chamber/base outlines.
 - NEXT: soundboard face + cross-section (lemicon) from perpendicular slices; fuse measured strings.
+
+- Soundbox cross-sections sliced from mesh -> `style25_soundbox_xsection.png`.
+  Confirms LEMICON shape: flat soundboard face + rounded back bulge, tapering bass->treble.
+  CAVEAT: single-image-3D over-deepens the front-back (mesh ~580mm at bass);
+  scale across-width to measured face (360mm) and depth to real soundbox depth.
