@@ -113,3 +113,11 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
 - U upgraded cubic->QUARTIC bezier, USER-weighted: bass peak now 1951 (was 1933), no overshoot.
 - Bass tuners clamped to 2000mm crown (harmonic curve peaks at A1-B1, real geometry).
 - Ordering g<L<S<N<F<T<=U verified 0 violations.
+
+## Round 4 (autonomous)
+- Item 4 diameter/tension cross-check: total ~1159 kgf vs L&H published ~950 (22% high), profile
+  steep (bass gut 40 -> treble 9 kgf). CRUCIAL: F refinement is mathematically INVARIANT to uniform
+  diameter scaling (0.000mm change at 15% thinner) -> the high tension does NOT move the dots.
+  Diameters validated for geometry; even-tension would need ~15% thinner bass gut (string choice, not geometry).
+- Item 5 disc buildability: bass/mid gaps 80->15mm (ample); top octave D6-G7 tighten to 5-11mm ->
+  standard compact fourchette mechanism (every concert harp). No impossibility. Flag added to neck spec.
