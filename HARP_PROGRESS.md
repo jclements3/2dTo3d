@@ -100,9 +100,9 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
 - Caveat logged: absolute tension runs ~high -> gut diameters may be slightly thick; relative smoothing robust
 
 ## Next agenda (continuing autonomously):
-1. Tighten U bezier to better hit the bass peak (C1~1960) without overshoot
-2. Sensitivity: re-run F/N/S at 80/20 and 50/50 blends; pick by tension smoothness
-3. Comprehensive engineering sheet (profile dots + soundboard face + neck spec, one high-res page)
+1. [DONE] U quartic bezier bass-anchored
+2. [DONE] blend sensitivity -> 50/50 (smoothest scale)
+3. [DONE] style25_engineering_sheet.png
 4. Re-derive gut diameters from a target-tension model as a cross-check on the published gauges
 5. Recheck disc-spacing geometry is mechanically buildable (fourchette clearance)
 
