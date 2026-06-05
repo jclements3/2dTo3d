@@ -121,3 +121,17 @@ ZX plane, Y=0. X = across (bass C1=0 -> treble G7=643 mm). Z = height (floor=0, 
   Diameters validated for geometry; even-tension would need ~15% thinner bass gut (string choice, not geometry).
 - Item 5 disc buildability: bass/mid gaps 80->15mm (ample); top octave D6-G7 tighten to 5-11mm ->
   standard compact fourchette mechanism (every concert harp). No impossibility. Flag added to neck spec.
+
+---
+## Round 5 complete + CONVERGENCE
+- Soundboard face: mesh-informed taper (broad mid, sharp treble) + teardrop bottom contraction + grommets.
+- Cross-deliverable consistency check: 47/47 neck-spec match grid, ordering valid, all Z in [0,2000],
+  one source frame. PASS.
+- High-res re-renders (2200px). Clean HARP_README.md written.
+- CAD-ready DXF: style25_profile.dxf (outline+window), style25_dots.dxf (strings/dots/rib/neck, layered).
+
+### CONVERGED.
+The profile + soundboard face + G/S/N/F/T dots are as accurate as the available data allows.
+Remaining uncertainties (U/L exact, soundboard taper detail, 16 off-frame bass U) require NEW
+owner measurements, not more computation. Further iteration = churn. Switching to availability mode:
+will act on any new owner data; otherwise the result stands as documented in HARP_README.md.
