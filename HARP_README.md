@@ -46,4 +46,7 @@ from one source table, `lhstyle25_grid2m.csv`.
 ## To make it exact (needs owner)
 - The 16 off-frame bass **U** values, read directly.
 - One or two more **soundboard face widths** (mid + treble) to pin the taper.
+- - Reconcile string spacing: measured air gaps sum to ~672 mm vs the C1→G7 rib span 643 mm (~4%);
+  grommet X positions are faithful to the *relative* gaps (scaled), but the absolute could be pinned
+  by confirming whether the caliper gaps are edge-to-edge vs center-to-center.
 - (Soundbox depth intentionally out of scope — acoustic analysis will set it.)
